@@ -12,6 +12,7 @@ tags:
   - name: Auth
   - name: Participants
   - name: Events
+  - name: Registrations
 
 paths:
   /health:
@@ -205,6 +206,49 @@ paths:
         '401': { description: Não autenticado }
         '403': { description: Apenas o dono pode remover }
         '404': { description: Evento não encontrado }
+
+  /events/{eventId}/participants:
+    parameters:
+      - { in: path, name: eventId, required: true, schema: { type: integer } }
+    post:
+      tags: [Registrations]
+      summary: Inscreve o participante autenticado no evento
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Inscrição criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Registration' }
+        '401': { description: Não autenticado }
+        '404': { description: Evento não encontrado }
+        '409': { description: Já inscrito }
+    get:
+      tags: [Registrations]
+      summary: Lista os inscritos do evento
+      responses:
+        '200':
+          description: Participantes inscritos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Participant' }
+        '404': { description: Evento não encontrado }
+
+  /events/{eventId}/participants/{participantId}:
+    parameters:
+      - { in: path, name: eventId, required: true, schema: { type: integer } }
+      - { in: path, name: participantId, required: true, schema: { type: integer } }
+    delete:
+      tags: [Registrations]
+      summary: Cancela inscrição (o próprio inscrito ou o dono do evento)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Inscrição cancelada }
+        '401': { description: Não autenticado }
+        '403': { description: Sem permissão }
+        '404': { description: Inscrição/evento não encontrado }
 
 components:
   securitySchemes:
