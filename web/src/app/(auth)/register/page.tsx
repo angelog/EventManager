@@ -25,7 +25,12 @@ export default function RegisterPage() {
   async function onSubmit(values: RegisterFormValues) {
     setFormError(null);
     try {
-      const { data } = await internalApi.post("/api/auth/register", values);
+      const payload = {
+        ...values,
+        phone: values.phone.replace(/\D/g, ""),
+      };
+
+      const { data } = await internalApi.post("/api/auth/register", payload);
       setParticipant(data.participant);
       router.push("/events");
       router.refresh();
@@ -73,6 +78,7 @@ export default function RegisterPage() {
           <Field label="Telefone" htmlFor="phone" error={errors.phone?.message}>
             <Input
               id="phone"
+              mask="phone"
               placeholder="41999999999"
               invalid={!!errors.phone}
               {...register("phone")}
