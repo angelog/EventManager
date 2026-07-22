@@ -15,7 +15,10 @@ export const registrationController = {
 
 	async list(_req: Request, res: Response) {
 		const { eventId } = res.locals.params as EventParams
-		const participants = await registrationService.listParticipants(eventId)
+		const participants = await registrationService.listParticipants(
+			eventId,
+			res.locals.participantId,
+		)
 		res.json(participants)
 	},
 

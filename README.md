@@ -111,6 +111,9 @@ Neste projeto, essa modelagem foi **estendida**: o *participante* também é o
   que alguém inscreva terceiros sem consentimento e simplifica o fluxo de uso real.
 - Eventos passam a ter **dono** (`created_by_id`): apenas o criador pode editar ou
   remover o próprio evento (retorna `403` caso contrário).
+- **Privacidade de contato**: e-mail e telefone dos inscritos (e do organizador) só
+  são expostos ao **dono do evento**. Visitantes e demais participantes veem apenas
+  `id` e `name` na listagem de inscritos e no detalhe do evento.
 
 **Motivação**: sem autenticação, qualquer um poderia editar/excluir eventos alheios
 ou inscrever terceiros, o que não reflete um sistema de gerenciamento real. As regras
@@ -232,17 +235,21 @@ Base URL: `http://localhost:3333`. Rotas marcadas com 🔒 exigem
 | `POST`   | `/auth/login`                          |      | Autentica e retorna token                      |
 | `GET`    | `/auth/me`                             | 🔒   | Dados do participante autenticado              |
 | `GET`    | `/participants`                        |      | Lista participantes (paginado)                 |
-| `GET`    | `/participants/:id`                    |      | Detalha um participante                        |
 | `PUT`    | `/participants/:id`                    | 🔒   | Atualiza o próprio cadastro                    |
 | `DELETE` | `/participants/:id`                    | 🔒   | Remove o próprio cadastro                      |
 | `POST`   | `/events`                              | 🔒   | Cria evento (nome/data obrigatórios, data futura, sem duplicar) |
 | `GET`    | `/events`                              |      | Lista eventos com busca (`?search=`) e paginação (`?page=&limit=`) + contagem de inscritos |
-| `GET`    | `/events/:eventId`                     |      | Detalhe do evento + participantes inscritos    |
+| `GET`    | `/events/:eventId`                     | 🔓   | Detalhe do evento + inscritos (contato só para o dono) |
 | `PUT`    | `/events/:eventId`                     | 🔒   | Edita o evento (apenas o dono)                 |
 | `DELETE` | `/events/:eventId`                     | 🔒   | Remove o evento (apenas o dono)                |
 | `POST`   | `/events/:eventId/participants`        | 🔒   | Inscreve o **usuário autenticado** no evento   |
-| `GET`    | `/events/:eventId/participants`        |      | Lista os inscritos do evento                   |
+| `GET`    | `/events/:eventId/participants`        | 🔓   | Lista os inscritos (contato só para o dono)    |
 | `DELETE` | `/events/:eventId/participants/:participantId` | 🔒 | Cancela inscrição (próprio ou dono do evento) |
+
+> 🔓 = autenticação **opcional**: a rota é pública, mas o retorno muda quando um
+> token válido é enviado. Nesses endpoints, os dados de contato (email/telefone)
+> dos inscritos e do organizador só são retornados quando o solicitante é o **dono
+> do evento**; visitantes e não-donos recebem apenas `id` e `name`.
 
 Exemplo de resposta de erro (formato padronizado):
 

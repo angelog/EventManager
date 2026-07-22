@@ -9,7 +9,10 @@ import {
 	paginated,
 	resolvePagination,
 } from '../../shared/http/pagination'
-import { toPublicParticipant } from '../participants/participant.mapper'
+import {
+	toParticipantSummary,
+	toPublicParticipant,
+} from '../participants/participant.mapper'
 import { eventRepository } from './event.repository'
 import type {
 	CreateEventInput,
@@ -32,17 +35,18 @@ type EventWithParticipants = NonNullable<
 	Awaited<ReturnType<typeof eventRepository.findByIdWithParticipants>>
 >
 
-function toEventDetail({
-	participants,
-	_count,
-	createdBy,
-	...event
-}: EventWithParticipants) {
+// `isOwner` controla a exposição de contato: só o dono do evento vê email/telefone
+// dos inscritos e do organizador; para os demais retornamos apenas id e nome.
+function toEventDetail(
+	{ participants, _count, createdBy, ...event }: EventWithParticipants,
+	isOwner: boolean,
+) {
+	const mapParticipant = isOwner ? toPublicParticipant : toParticipantSummary
 	return {
 		...event,
-		createdBy: toPublicParticipant(createdBy),
+		createdBy: mapParticipant(createdBy),
 		participants: participants.map((registration) =>
-			toPublicParticipant(registration.participant),
+			mapParticipant(registration.participant),
 		),
 		participantsCount: _count.participants,
 	}
@@ -89,12 +93,12 @@ export const eventService = {
 		)
 	},
 
-	async getById(id: number) {
+	async getById(id: number, requesterId?: number) {
 		const event = await eventRepository.findByIdWithParticipants(id)
 		if (!event) {
 			throw new NotFoundError('EVENT_NOT_FOUND', 'Evento não encontrado')
 		}
-		return toEventDetail(event)
+		return toEventDetail(event, requesterId === event.createdById)
 	},
 
 	async update(id: number, input: UpdateEventInput, requesterId: number) {

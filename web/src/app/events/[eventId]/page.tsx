@@ -5,8 +5,8 @@ import { ParticipantList } from "@/components/events/participant-list";
 import { RegistrationButton } from "@/components/events/registration-button";
 import { Container } from "@/components/layout/container";
 import { Badge, Button, Card } from "@/components/ui";
-import { eventsApi } from "@/lib/api";
-import { getServerSession } from "@/lib/auth/session";
+import { authConfig, eventsApi } from "@/lib/api";
+import { getServerSession, getSessionToken } from "@/lib/auth/session";
 import { formatDate, formatParticipants } from "@/lib/utils/format";
 import type { EventDetail } from "@/types";
 
@@ -21,11 +21,16 @@ export default async function EventDetailPage({
   const id = Number(eventId);
   if (!Number.isInteger(id) || id <= 0) notFound();
 
-  const session = await getServerSession();
+  const [session, token] = await Promise.all([
+    getServerSession(),
+    getSessionToken(),
+  ]);
 
   let event: EventDetail;
   try {
-    event = await eventsApi.getById(id);
+    // Repassa o token para que o dono do evento receba os dados de contato
+    // dos inscritos (a API só os expõe ao organizador).
+    event = await eventsApi.getById(id, token ? authConfig(token) : undefined);
   } catch {
     notFound();
   }

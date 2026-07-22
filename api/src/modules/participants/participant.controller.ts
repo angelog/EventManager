@@ -13,12 +13,6 @@ export const participantController = {
 		res.json(result)
 	},
 
-	async getById(_req: Request, res: Response) {
-		const { id } = res.locals.params as ParticipantIdParams
-		const participant = await participantService.getById(id)
-		res.json(participant)
-	},
-
 	async update(req: Request, res: Response) {
 		const { id } = res.locals.params as ParticipantIdParams
 		const input = req.body as UpdateParticipantInput

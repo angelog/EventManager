@@ -1,5 +1,9 @@
 import { Router } from 'express'
-import { authenticate, validate } from '../../shared/middlewares'
+import {
+	authenticate,
+	optionalAuthenticate,
+	validate,
+} from '../../shared/middlewares'
 import { registrationController } from './registration.controller'
 import {
 	eventParamsSchema,
@@ -17,6 +21,7 @@ registrationRoutes.post(
 
 registrationRoutes.get(
 	'/',
+	optionalAuthenticate,
 	validate({ params: eventParamsSchema }),
 	registrationController.list,
 )

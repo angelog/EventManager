@@ -93,6 +93,45 @@ describe('Eventos', () => {
 		})
 	})
 
+	describe('GET /events/:eventId', () => {
+		it('oculta o contato do organizador e dos inscritos para não-donos', async () => {
+			const owner = await registerParticipant()
+			const attendee = await registerParticipant()
+			const event = await createEvent(owner.token)
+			await request(app)
+				.post(`/events/${event.body.id}/participants`)
+				.set(authHeader(attendee.token))
+
+			const response = await request(app).get(`/events/${event.body.id}`)
+
+			expect(response.status).toBe(200)
+			expect(response.body.createdBy).not.toHaveProperty('email')
+			expect(response.body.participants[0]).toMatchObject({
+				id: attendee.participant.id,
+			})
+			expect(response.body.participants[0]).not.toHaveProperty('email')
+		})
+
+		it('expõe os contatos quando o dono acessa o próprio evento', async () => {
+			const owner = await registerParticipant()
+			const attendee = await registerParticipant()
+			const event = await createEvent(owner.token)
+			await request(app)
+				.post(`/events/${event.body.id}/participants`)
+				.set(authHeader(attendee.token))
+
+			const response = await request(app)
+				.get(`/events/${event.body.id}`)
+				.set(authHeader(owner.token))
+
+			expect(response.status).toBe(200)
+			expect(response.body.createdBy).toHaveProperty('email')
+			expect(response.body.participants[0]).toMatchObject({
+				email: attendee.participant.email,
+			})
+		})
+	})
+
 	describe('Permissão de dono', () => {
 		it('impede que outro participante edite um evento que não é dele', async () => {
 			const owner = await registerParticipant()

@@ -23,9 +23,14 @@ export interface EventListItem extends Event {
   participantsCount: number;
 }
 
+// Inscrito exibido no detalhe do evento. Dados de contato (email/phone) só vêm
+// preenchidos quando o solicitante é o dono do evento; senão, apenas id e nome.
+export type EventAttendee = Pick<Participant, "id" | "name"> &
+  Partial<Pick<Participant, "email" | "phone" | "createdAt" | "updatedAt">>;
+
 export interface EventDetail extends Event {
-  createdBy: Participant;
-  participants: Participant[];
+  createdBy: EventAttendee;
+  participants: EventAttendee[];
   participantsCount: number;
 }
 

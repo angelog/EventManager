@@ -14,10 +14,6 @@ export const participantsApi = {
       .then((res) => res.data);
   },
 
-  getById(id: number) {
-    return api.get<Participant>(`/participants/${id}`).then((res) => res.data);
-  },
-
   update(
     id: number,
     payload: UpdateParticipantPayload,

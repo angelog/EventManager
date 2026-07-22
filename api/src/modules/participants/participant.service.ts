@@ -30,17 +30,6 @@ export const participantService = {
 		)
 	},
 
-	async getById(id: number) {
-		const participant = await participantRepository.findById(id)
-		if (!participant) {
-			throw new NotFoundError(
-				'PARTICIPANT_NOT_FOUND',
-				'Participante não encontrado',
-			)
-		}
-		return toPublicParticipant(participant)
-	},
-
 	async update(id: number, requesterId: number, input: UpdateParticipantInput) {
 		if (id !== requesterId) {
 			throw new ForbiddenError(

@@ -20,7 +20,7 @@ export const eventController = {
 
 	async getById(_req: Request, res: Response) {
 		const { eventId } = res.locals.params as EventIdParams
-		const event = await eventService.getById(eventId)
+		const event = await eventService.getById(eventId, res.locals.participantId)
 		res.json(event)
 	},
 

@@ -62,7 +62,7 @@ describe('Inscrição em evento', () => {
 	})
 
 	describe('GET /events/:eventId/participants', () => {
-		it('lista os inscritos do evento (público)', async () => {
+		it('para visitantes (sem token) retorna apenas id e nome, sem contato', async () => {
 			const owner = await registerParticipant()
 			const attendee = await registerParticipant()
 			const event = await createEvent(owner.token)
@@ -77,6 +77,46 @@ describe('Inscrição em evento', () => {
 			expect(response.status).toBe(200)
 			expect(response.body).toHaveLength(1)
 			expect(response.body[0]).toMatchObject({ id: attendee.participant.id })
+			expect(response.body[0]).not.toHaveProperty('password')
+			expect(response.body[0]).not.toHaveProperty('email')
+			expect(response.body[0]).not.toHaveProperty('phone')
+		})
+
+		it('para quem não é dono do evento também oculta o contato', async () => {
+			const owner = await registerParticipant()
+			const attendee = await registerParticipant()
+			const stranger = await registerParticipant()
+			const event = await createEvent(owner.token)
+			await request(app)
+				.post(`/events/${event.body.id}/participants`)
+				.set(authHeader(attendee.token))
+
+			const response = await request(app)
+				.get(`/events/${event.body.id}/participants`)
+				.set(authHeader(stranger.token))
+
+			expect(response.status).toBe(200)
+			expect(response.body[0]).not.toHaveProperty('email')
+		})
+
+		it('para o dono do evento expõe os dados de contato dos inscritos', async () => {
+			const owner = await registerParticipant()
+			const attendee = await registerParticipant()
+			const event = await createEvent(owner.token)
+			await request(app)
+				.post(`/events/${event.body.id}/participants`)
+				.set(authHeader(attendee.token))
+
+			const response = await request(app)
+				.get(`/events/${event.body.id}/participants`)
+				.set(authHeader(owner.token))
+
+			expect(response.status).toBe(200)
+			expect(response.body[0]).toMatchObject({
+				id: attendee.participant.id,
+				email: attendee.participant.email,
+			})
+			expect(response.body[0]).toHaveProperty('phone')
 			expect(response.body[0]).not.toHaveProperty('password')
 		})
 	})

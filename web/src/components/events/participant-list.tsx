@@ -1,7 +1,7 @@
-import type { Participant } from "@/types";
+import type { EventAttendee } from "@/types";
 
 interface ParticipantListProps {
-  participants: Participant[];
+  participants: EventAttendee[];
 }
 
 export function ParticipantList({ participants }: ParticipantListProps) {
@@ -18,9 +18,11 @@ export function ParticipantList({ participants }: ParticipantListProps) {
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm text-text">{participant.name}</p>
-            <p className="truncate text-xs text-text-muted">
-              {participant.email}
-            </p>
+            {participant.email && (
+              <p className="truncate text-xs text-text-muted">
+                {participant.email}
+              </p>
+            )}
           </div>
         </li>
       ))}
