@@ -4,7 +4,10 @@ import {
 	NotFoundError,
 } from '../../shared/errors'
 import { eventRepository } from '../events/event.repository'
-import { toPublicParticipant } from '../participants/participant.mapper'
+import {
+	toParticipantSummary,
+	toPublicParticipant,
+} from '../participants/participant.mapper'
 import { registrationRepository } from './registration.repository'
 
 export const registrationService = {
@@ -62,16 +65,21 @@ export const registrationService = {
 		await registrationRepository.delete(eventId, targetParticipantId)
 	},
 
-	async listParticipants(eventId: number) {
+	// `requesterId` é opcional: só o dono do evento vê os dados de contato dos
+	// inscritos; visitantes e não-donos recebem apenas id e nome.
+	async listParticipants(eventId: number, requesterId?: number) {
 		const event = await eventRepository.findById(eventId)
 		if (!event) {
 			throw new NotFoundError('EVENT_NOT_FOUND', 'Evento não encontrado')
 		}
 
+		const isOwner = requesterId === event.createdById
 		const registrations =
 			await registrationRepository.listParticipantsByEvent(eventId)
 		return registrations.map((registration) =>
-			toPublicParticipant(registration.participant),
+			isOwner
+				? toPublicParticipant(registration.participant)
+				: toParticipantSummary(registration.participant),
 		)
 	},
 }

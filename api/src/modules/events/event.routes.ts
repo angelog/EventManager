@@ -1,5 +1,9 @@
 import { Router } from 'express'
-import { authenticate, validate } from '../../shared/middlewares'
+import {
+	authenticate,
+	optionalAuthenticate,
+	validate,
+} from '../../shared/middlewares'
 import { eventController } from './event.controller'
 import {
 	createEventBodySchema,
@@ -25,6 +29,7 @@ eventRoutes.get(
 
 eventRoutes.get(
 	'/:eventId',
+	optionalAuthenticate,
 	validate({ params: eventIdParamsSchema }),
 	eventController.getById,
 )

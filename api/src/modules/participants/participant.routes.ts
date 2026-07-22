@@ -15,12 +15,6 @@ participantRoutes.get(
 	participantController.list,
 )
 
-participantRoutes.get(
-	'/:id',
-	validate({ params: participantIdParamsSchema }),
-	participantController.getById,
-)
-
 participantRoutes.put(
 	'/:id',
 	authenticate,

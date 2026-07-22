@@ -17,8 +17,10 @@ export const eventsApi = {
       .then((res) => res.data);
   },
 
-  getById(id: number) {
-    return api.get<EventDetail>(`/events/${id}`).then((res) => res.data);
+  getById(id: number, config?: AxiosRequestConfig) {
+    return api
+      .get<EventDetail>(`/events/${id}`, config)
+      .then((res) => res.data);
   },
 
   create(payload: CreateEventPayload, config?: AxiosRequestConfig) {

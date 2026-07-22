@@ -95,16 +95,6 @@ paths:
   /participants/{id}:
     parameters:
       - { in: path, name: id, required: true, schema: { type: integer } }
-    get:
-      tags: [Participants]
-      summary: Detalhe do participante
-      responses:
-        '200':
-          description: Participante
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Participant' }
-        '404': { description: Participante não encontrado }
     put:
       tags: [Participants]
       summary: Atualiza o próprio cadastro
@@ -171,6 +161,10 @@ paths:
     get:
       tags: [Events]
       summary: Detalhe do evento (com dono, inscritos e contagem)
+      description: >-
+        Autenticação opcional. Apenas o dono do evento recebe os dados de
+        contato (email/telefone) do organizador e dos inscritos; os demais
+        recebem somente id e nome nesses campos.
       responses:
         '200':
           description: Evento
@@ -226,6 +220,10 @@ paths:
     get:
       tags: [Registrations]
       summary: Lista os inscritos do evento
+      description: >-
+        Autenticação opcional. Apenas o dono do evento recebe os dados de
+        contato (email/telefone) dos inscritos; visitantes e não-donos recebem
+        somente id e nome.
       responses:
         '200':
           description: Participantes inscritos
@@ -233,7 +231,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Participant' }
+                items: { $ref: '#/components/schemas/EventAttendee' }
         '404': { description: Evento não encontrado }
 
   /events/{eventId}/participants/{participantId}:
@@ -322,11 +320,24 @@ components:
         - $ref: '#/components/schemas/Event'
         - type: object
           properties:
-            createdBy: { $ref: '#/components/schemas/Participant' }
+            createdBy: { $ref: '#/components/schemas/EventAttendee' }
             participantsCount: { type: integer, example: 2 }
             participants:
               type: array
-              items: { $ref: '#/components/schemas/Participant' }
+              items: { $ref: '#/components/schemas/EventAttendee' }
+
+    EventAttendee:
+      type: object
+      description: >-
+        Inscrito/organizador exibido no detalhe do evento. Os campos de contato
+        (email, phone) só são preenchidos quando o solicitante é o dono do evento.
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: João Silva }
+        email: { type: string, format: email, description: Somente para o dono do evento }
+        phone: { type: string, description: Somente para o dono do evento }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
 
     CreateEvent:
       type: object
