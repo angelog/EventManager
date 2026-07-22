@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-// :eventId da URL. Coeragido para number.
 export const eventParamsSchema = z.object({
 	eventId: z.coerce.number().int().positive(),
 })

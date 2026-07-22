@@ -11,7 +11,7 @@ import type { LoginInput, RegisterInput } from './auth.schema'
 
 export const authService = {
 	async register(input: RegisterInput) {
-		// Regra: email único.
+
 		const existing = await participantRepository.findByEmail(input.email)
 		if (existing) {
 			throw new ConflictError(
@@ -34,7 +34,6 @@ export const authService = {
 
 	async login(input: LoginInput) {
 		const participant = await participantRepository.findByEmail(input.email)
-		// Mesma resposta para email inexistente ou senha errada (não vaza qual falhou).
 		if (
 			!participant ||
 			!(await comparePassword(input.password, participant.password))

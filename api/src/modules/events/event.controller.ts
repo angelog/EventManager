@@ -6,9 +6,6 @@ import type {
 } from './event.schema'
 import { eventService } from './event.service'
 
-// Camada HTTP: lê a entrada já validada, delega ao service e devolve a resposta.
-// Erros lançados nos services são propagados automaticamente pelo Express 5
-// (async) até o errorHandler central — por isso não há try/catch aqui.
 export const eventController = {
 	async create(req: Request, res: Response) {
 		const event = await eventService.create(req.body, res.locals.participantId)
@@ -16,7 +13,6 @@ export const eventController = {
 	},
 
 	async list(_req: Request, res: Response) {
-		// query validada/coeragida foi colocada em res.locals pelo middleware validate.
 		const query = res.locals.query as ListEventsQuery
 		const result = await eventService.list(query)
 		res.json(result)
