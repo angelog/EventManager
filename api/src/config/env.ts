@@ -6,7 +6,9 @@ const envSchema = z.object({
 	PORT: z.coerce.number().int().positive().default(3333),
 	NODE_ENV: z
 		.enum(['development', 'test', 'production'])
-		.default('development')
+		.default('development'),
+	JWT_SECRET: z.string().min(1, 'JWT_SECRET é obrigatória'),
+	JWT_EXPIRES_IN: z.string().default('7d'),
 })
 
 const parsed = envSchema.safeParse(process.env)

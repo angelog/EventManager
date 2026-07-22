@@ -11,7 +11,6 @@ interface ValidationSchemas {
 export function validate(schemas: ValidationSchemas) {
 	return (req: Request, res: Response, next: NextFunction) => {
 		try {
-
 			if (schemas.body) req.body = schemas.body.parse(req.body)
 			if (schemas.params) res.locals.params = schemas.params.parse(req.params)
 			if (schemas.query) res.locals.query = schemas.query.parse(req.query)
