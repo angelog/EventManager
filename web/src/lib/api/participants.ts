@@ -18,7 +18,6 @@ export const participantsApi = {
     return api.get<Participant>(`/participants/${id}`).then((res) => res.data);
   },
 
-  // Atualiza o próprio cadastro (Authorization obrigatório).
   update(
     id: number,
     payload: UpdateParticipantPayload,

@@ -20,7 +20,6 @@ export const authApi = {
       .then((res) => res.data);
   },
 
-  // Requer Authorization (usado server-side com o token do cookie).
   me(config?: AxiosRequestConfig) {
     return api.get<Participant>("/auth/me", config).then((res) => res.data);
   },
