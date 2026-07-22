@@ -11,6 +11,7 @@ export const participantRoutes = Router()
 
 participantRoutes.get(
 	'/',
+	authenticate,
 	validate({ query: listParticipantsQuerySchema }),
 	participantController.list,
 )

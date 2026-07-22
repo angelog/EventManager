@@ -1,29 +1,76 @@
+name: event-manager
+
 services:
-
-  postgres:
-
-    image: postgres:17
-
+  db:
+    image: postgres:17-alpine
     container_name: event-manager-db
-
     restart: unless-stopped
-
     environment:
-
-      POSTGRES_DB: eventmanager
-
-      POSTGRES_USER: postgres
-
-      POSTGRES_PASSWORD: postgres
-
+      POSTGRES_DB: ${POSTGRES_DB:-eventmanager}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-
-      - "5432:5432"
-
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-eventmanager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Serviço efêmero: aplica as migrations e encerra. Usa o estágio "builder"
+  # (que contém o Prisma CLI) para não incluí-lo na imagem final da API.
+  migrate:
+    build:
+      context: ./api
+      target: builder
+    image: event-manager-api:builder
+    command: npx prisma migrate deploy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-eventmanager}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./api
+    image: event-manager-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-eventmanager}
+      PORT: 3333
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    ports:
+      - "${API_PORT:-3333}:3333"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ./web
+      args:
+        # Consumido apenas pelo lado servidor do Next (rede interna do compose).
+        NEXT_PUBLIC_API_URL: http://api:3333
+    image: event-manager-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://api:3333
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
-
   postgres_data:

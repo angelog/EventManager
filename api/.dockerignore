@@ -1,0 +1,21 @@
+# Dependências e artefatos (reinstalados/reconstruídos dentro da imagem)
+node_modules
+dist
+src/generated
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Testes e ferramentas
+test
+vitest.config.ts
+biome.json
+
+# Git e diversos
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.log

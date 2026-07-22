@@ -155,18 +155,51 @@ Cada pacote tem seu próprio `.env.example`. Copie-o para `.env` (API) e `.env.l
 
 ## Instalação e execução
 
-### 1. Subir o banco de dados
+Há dois caminhos: subir **tudo via Docker** (recomendado, um comando só) ou rodar
+os apps localmente com o **Postgres no Docker** (melhor para desenvolvimento).
+
+### Opção A — Tudo via Docker (recomendado)
 
 Na raiz do projeto:
 
 ```bash
-docker compose up -d
+docker compose up --build
 ```
 
-Isso sobe um PostgreSQL 17 em `localhost:5432` (db `eventmanager`, usuário/senha
-`postgres`/`postgres`, conforme o `docker-compose.yml`).
+Isso sobe, em ordem, quatro peças:
 
-### 2. Back-end (`api/`)
+1. **db** — PostgreSQL 17 (com healthcheck)
+2. **migrate** — serviço efêmero que aplica as migrations e encerra
+3. **api** — sobe só depois do banco saudável e das migrations aplicadas
+4. **web** — sobe depois da API saudável
+
+Serviços disponíveis:
+
+- Front-end: **http://localhost:3000**
+- API / Swagger: **http://localhost:3333/docs** · Health: **http://localhost:3333/health**
+
+Os valores padrão (credenciais do banco, `JWT_SECRET`, portas) estão no
+`docker-compose.yml` e podem ser sobrescritos por um `.env` na raiz — por exemplo
+`JWT_SECRET`, `POSTGRES_PASSWORD`, `WEB_PORT`, `API_PORT`. Para parar e limpar:
+
+```bash
+docker compose down          # para os containers
+docker compose down -v       # para e apaga o volume do banco
+```
+
+> Detalhe de rede: o browser fala apenas com o próprio Next (BFF via rotas
+> relativas); só o lado servidor do Next chama a API, por isso `NEXT_PUBLIC_API_URL`
+> aponta para `http://api:3333` (rede interna do compose).
+
+### Opção B — Desenvolvimento local (Postgres no Docker)
+
+Sobe apenas o banco no Docker e roda os apps no host, com hot reload:
+
+```bash
+docker compose up -d db
+```
+
+**Back-end (`api/`)**
 
 ```bash
 cd api
@@ -176,12 +209,7 @@ npx prisma migrate deploy     # aplica as migrations no banco
 npm run dev                   # sobe a API em http://localhost:3333
 ```
 
-- Documentação interativa (Swagger): **http://localhost:3333/docs**
-- Health check: **http://localhost:3333/health**
-
-### 3. Front-end (`web/`)
-
-Em outro terminal:
+**Front-end (`web/`)** — em outro terminal:
 
 ```bash
 cd web

@@ -81,6 +81,7 @@ paths:
     get:
       tags: [Participants]
       summary: Lista participantes
+      security: [{ bearerAuth: [] }]
       parameters:
         - { in: query, name: page, schema: { type: integer }, description: Opcional — sem page/limit, retorna todos }
         - { in: query, name: limit, schema: { type: integer } }

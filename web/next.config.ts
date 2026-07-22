@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Gera um servidor Node mínimo em .next/standalone para imagens Docker enxutas.
+  output: "standalone",
   reactCompiler: true,
   allowedDevOrigins: [
     "http://localhost:3000",

@@ -1,0 +1,23 @@
+# Dependências e artefatos de build
+node_modules
+.next
+out
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Testes e ferramentas
+**/*.test.ts
+**/*.test.tsx
+vitest.config.ts
+vitest.setup.ts
+biome.json
+
+# Git e diversos
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.log
