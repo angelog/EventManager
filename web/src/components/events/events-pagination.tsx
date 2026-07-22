@@ -8,7 +8,6 @@ interface EventsPaginationProps {
   totalPages: number;
 }
 
-// Paginação orientada por URL: preserva a busca atual e troca só o ?page=.
 export function EventsPagination({ page, totalPages }: EventsPaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();

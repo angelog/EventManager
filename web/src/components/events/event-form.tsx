@@ -15,8 +15,16 @@ export interface EventFormResult {
 interface EventFormProps {
   defaultValues?: EventFormValues;
   submitLabel: string;
-  // Recebe o payload pronto; devolve ok/erro. O redirect fica com o pai.
   onSubmit: (payload: CreateEventPayload) => Promise<EventFormResult>;
+}
+
+function getMinDateTime() {
+  const now = new Date();
+
+  const offset = now.getTimezoneOffset();
+  const localDate = new Date(now.getTime() - offset * 60 * 1000);
+
+  return localDate.toISOString().slice(0, 16);
 }
 
 export function EventForm({
@@ -48,9 +56,6 @@ export function EventForm({
     }
   }
 
-  // `defaultValue` nativo garante a exibição do valor inicial no DOM (edição),
-  // independentemente do react-hook-form/React Compiler. O RHF mantém o estado
-  // (seedado por defaultValues) para validação e submit.
   return (
     <form
       onSubmit={handleSubmit(handle)}
@@ -89,6 +94,7 @@ export function EventForm({
           type="datetime-local"
           className="[color-scheme:dark]"
           defaultValue={defaultValues?.date}
+          min={getMinDateTime()}
           invalid={!!errors.date}
           {...register("date")}
         />
