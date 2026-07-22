@@ -9,6 +9,9 @@ info:
 
 tags:
   - name: Health
+  - name: Auth
+  - name: Participants
+  - name: Events
 
 paths:
   /health:
@@ -72,6 +75,262 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Participant' }
         '401': { description: Não autenticado }
+
+  /participants:
+    get:
+      tags: [Participants]
+      summary: Lista participantes
+      parameters:
+        - { in: query, name: page, schema: { type: integer }, description: Opcional — sem page/limit, retorna todos }
+        - { in: query, name: limit, schema: { type: integer } }
+        - { in: query, name: search, schema: { type: string } }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedParticipants' }
+
+  /participants/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Participants]
+      summary: Detalhe do participante
+      responses:
+        '200':
+          description: Participante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Participant' }
+        '404': { description: Participante não encontrado }
+    put:
+      tags: [Participants]
+      summary: Atualiza o próprio cadastro
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateParticipant' }
+      responses:
+        '200':
+          description: Participante atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Participant' }
+        '401': { description: Não autenticado }
+        '403': { description: Só pode alterar o próprio cadastro }
+        '409': { description: Email já cadastrado }
+    delete:
+      tags: [Participants]
+      summary: Remove o próprio cadastro
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Removido }
+        '401': { description: Não autenticado }
+        '403': { description: Só pode remover o próprio cadastro }
+
+  /events:
+    post:
+      tags: [Events]
+      summary: Cadastra um evento (do participante autenticado)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEvent' }
+      responses:
+        '201':
+          description: Evento criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+        '401': { description: Não autenticado }
+        '409': { description: Evento duplicado (nome + data) }
+        '422': { description: Validação ou data não futura }
+    get:
+      tags: [Events]
+      summary: Lista eventos (com contagem de inscritos)
+      parameters:
+        - { in: query, name: page, schema: { type: integer }, description: Opcional — sem page/limit, retorna todos }
+        - { in: query, name: limit, schema: { type: integer } }
+        - { in: query, name: search, schema: { type: string }, description: Busca por nome }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedEvents' }
+
+  /events/{eventId}:
+    parameters:
+      - { in: path, name: eventId, required: true, schema: { type: integer } }
+    get:
+      tags: [Events]
+      summary: Detalhe do evento (com dono, inscritos e contagem)
+      responses:
+        '200':
+          description: Evento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventDetail' }
+        '404': { description: Evento não encontrado }
+    put:
+      tags: [Events]
+      summary: Atualiza um evento (apenas o dono)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateEvent' }
+      responses:
+        '200':
+          description: Evento atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+        '401': { description: Não autenticado }
+        '403': { description: Apenas o dono pode alterar }
+        '404': { description: Evento não encontrado }
+        '409': { description: Conflito de nome + data }
+    delete:
+      tags: [Events]
+      summary: Remove um evento (apenas o dono)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Removido }
+        '401': { description: Não autenticado }
+        '403': { description: Apenas o dono pode remover }
+        '404': { description: Evento não encontrado }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Participant:
+      type: object
+      description: Participante. A senha nunca é retornada.
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: João Silva }
+        email: { type: string, format: email, example: joao@email.com }
+        phone: { type: string, example: '41999999999' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    RegisterInput:
+      type: object
+      required: [name, email, phone, password]
+      properties:
+        name: { type: string, example: João Silva }
+        email: { type: string, format: email, example: joao@email.com }
+        phone: { type: string, example: '41999999999' }
+        password: { type: string, minLength: 6, example: senha123 }
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: joao@email.com }
+        password: { type: string, example: senha123 }
+
+    UpdateParticipant:
+      type: object
+      description: Ao menos um campo. Não altera senha.
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+
+    AuthResponse:
+      type: object
+      properties:
+        participant: { $ref: '#/components/schemas/Participant' }
+        token: { type: string, description: JWT }
+
+    Event:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Evento de Tecnologia }
+        description: { type: string, nullable: true }
+        date: { type: string, format: date-time }
+        createdById: { type: integer, example: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    EventListItem:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          properties:
+            participantsCount: { type: integer, example: 2 }
+
+    EventDetail:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          properties:
+            createdBy: { $ref: '#/components/schemas/Participant' }
+            participantsCount: { type: integer, example: 2 }
+            participants:
+              type: array
+              items: { $ref: '#/components/schemas/Participant' }
+
+    CreateEvent:
+      type: object
+      required: [name, date]
+      properties:
+        name: { type: string, example: Evento de Tecnologia }
+        description: { type: string, example: Evento sobre desenvolvimento }
+        date: { type: string, format: date-time, example: '2030-08-10T19:00:00Z' }
+
+    UpdateEvent:
+      type: object
+      description: Ao menos um campo deve ser informado.
+      properties:
+        name: { type: string }
+        description: { type: string }
+        date: { type: string, format: date-time }
+
+    Registration:
+      type: object
+      properties:
+        id: { type: integer }
+        eventId: { type: integer }
+        participantId: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        limit: { type: integer, example: 10 }
+        total: { type: integer, example: 42 }
+        totalPages: { type: integer, example: 5 }
+
+    PaginatedEvents:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/EventListItem' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    PaginatedParticipants:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Participant' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
 
     Error:
       type: object
