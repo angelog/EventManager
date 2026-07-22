@@ -48,7 +48,6 @@ export interface Paginated<T> {
   meta: PaginationMeta;
 }
 
-// Resposta de erro padronizada da API: { error, message, details? }.
 export interface ApiErrorBody {
   error: string;
   message: string;
@@ -60,7 +59,6 @@ export interface AuthResponse {
   token: string;
 }
 
-// Payloads das requisições.
 export interface CreateEventPayload {
   name: string;
   description?: string;
