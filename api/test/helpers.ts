@@ -1,7 +1,7 @@
 import request from 'supertest'
 import { app } from '../src/app'
 
-function getFutureDate(days: number): Date {
+export function getFutureDate(days: number): Date {
 	const date = new Date();
 	date.setDate(date.getDate() + days);
 	return date;
