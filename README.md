@@ -265,17 +265,3 @@ O telefone é **normalizado** (apenas dígitos, 10–11) antes de persistir, gar
 formato consistente.
 
 ---
-
-## Pontos de melhoria futura
-
-- **Refresh token / expiração de sessão**: hoje o JWT tem validade fixa (7d) sem
-  mecanismo de renovação.
-- **Endpoint `POST /participants` público sem senha**: expor um cadastro de
-  participante "convidado" (sem autenticação) para aderir 100% ao contrato literal do
-  desafio, além do fluxo autenticado atual.
-- **Paginação/rolagem na lista de inscritos** de eventos muito grandes.
-- **Testes end-to-end** no front (ex.: Playwright) cobrindo o fluxo completo de
-  login → criar evento → inscrever.
-- **CI**: pipeline rodando lint + testes a cada push.
-- **Observabilidade**: logs estruturados e tratamento de rate limiting.
-- **Containerização da aplicação** (Dockerfile para api e web) além do banco.
