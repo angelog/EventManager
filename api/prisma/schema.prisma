@@ -1,13 +1,59 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  // Gera o client em CommonJS para casar com "type": "commonjs" do projeto
+  // (evita import.meta no build compilado para dist).
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model Participant {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  createdEvents Event[]            @relation("EventOwner")
+  registrations EventParticipant[]
+
+  @@map("participants")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  date        DateTime
+  createdById Int      @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy    Participant        @relation("EventOwner", fields: [createdById], references: [id], onDelete: Cascade)
+  participants EventParticipant[]
+
+  @@unique([name, date])
+  @@index([createdById])
+  @@map("events")
+}
+
+model EventParticipant {
+  id            Int      @id @default(autoincrement())
+  eventId       Int      @map("event_id")
+  participantId Int      @map("participant_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, participantId])
+  @@index([eventId])
+  @@index([participantId])
+  @@map("event_participants")
 }
