@@ -30,11 +30,11 @@ export const participantRepository = {
 	async findManyPaginated({ skip, take, search }: FindManyParams) {
 		const where = search
 			? {
-				OR: [
-					{ name: { contains: search, mode: 'insensitive' as const } },
-					{ email: { contains: search, mode: 'insensitive' as const } },
-				],
-			}
+					OR: [
+						{ name: { contains: search, mode: 'insensitive' as const } },
+						{ email: { contains: search, mode: 'insensitive' as const } },
+					],
+				}
 			: {}
 
 		const [participants, total] = await Promise.all([

@@ -11,7 +11,6 @@ import type { LoginInput, RegisterInput } from './auth.schema'
 
 export const authService = {
 	async register(input: RegisterInput) {
-
 		const existing = await participantRepository.findByEmail(input.email)
 		if (existing) {
 			throw new ConflictError(

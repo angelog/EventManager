@@ -2,9 +2,9 @@ import request from 'supertest'
 import { app } from '../src/app'
 
 export function getFutureDate(days: number): Date {
-	const date = new Date();
-	date.setDate(date.getDate() + days);
-	return date;
+	const date = new Date()
+	date.setDate(date.getDate() + days)
+	return date
 }
 
 let counter = 0

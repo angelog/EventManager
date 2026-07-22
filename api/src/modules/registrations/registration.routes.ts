@@ -2,28 +2,28 @@ import { Router } from 'express'
 import { authenticate, validate } from '../../shared/middlewares'
 import { registrationController } from './registration.controller'
 import {
-    eventParamsSchema,
-    registrationParamsSchema,
+	eventParamsSchema,
+	registrationParamsSchema,
 } from './registration.schema'
 
 export const registrationRoutes = Router({ mergeParams: true })
 
 registrationRoutes.post(
-    '/',
-    authenticate,
-    validate({ params: eventParamsSchema }),
-    registrationController.register,
+	'/',
+	authenticate,
+	validate({ params: eventParamsSchema }),
+	registrationController.register,
 )
 
 registrationRoutes.get(
-    '/',
-    validate({ params: eventParamsSchema }),
-    registrationController.list,
+	'/',
+	validate({ params: eventParamsSchema }),
+	registrationController.list,
 )
 
 registrationRoutes.delete(
-    '/:participantId',
-    authenticate,
-    validate({ params: registrationParamsSchema }),
-    registrationController.cancel,
+	'/:participantId',
+	authenticate,
+	validate({ params: registrationParamsSchema }),
+	registrationController.cancel,
 )
