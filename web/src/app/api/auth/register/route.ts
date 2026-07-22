@@ -1,0 +1,28 @@
+import { cookies } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
+import { authApi, getApiError } from "@/lib/api";
+import { SESSION_MAX_AGE, TOKEN_COOKIE } from "@/lib/auth/constants";
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  try {
+    const { participant, token } = await authApi.register(body);
+
+    const store = await cookies();
+    store.set({
+      name: TOKEN_COOKIE,
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: SESSION_MAX_AGE,
+    });
+
+    return NextResponse.json({ participant }, { status: 201 });
+  } catch (error) {
+    const { status, message } = getApiError(error);
+    return NextResponse.json({ message }, { status });
+  }
+}
